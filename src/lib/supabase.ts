@@ -1,10 +1,20 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+// Check if environment variables are available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Validate environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase environment variables are missing. Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
+}
+
+// Create client with fallback for development purposes
+export const supabase = createClient(
+  supabaseUrl || 'https://your-placeholder-url.supabase.co',
+  supabaseAnonKey || 'your-placeholder-key'
+);
 
 export type UserRole = 'student' | 'admin';
 
@@ -17,16 +27,21 @@ export type Profile = {
 };
 
 export async function getCurrentUser() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return null;
-  
-  const { data } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', session.user.id)
-    .single();
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return null;
     
-  return data as Profile | null;
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+      
+    return data as Profile | null;
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    return null;
+  }
 }
 
 export async function isAdmin() {
@@ -35,5 +50,9 @@ export async function isAdmin() {
 }
 
 export async function signOut() {
-  await supabase.auth.signOut();
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('Error signing out:', error);
+  }
 }
