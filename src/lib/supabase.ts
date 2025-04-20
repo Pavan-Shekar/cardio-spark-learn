@@ -1,20 +1,13 @@
 
 import { createClient } from '@supabase/supabase-js';
+import { Database } from '@/integrations/supabase/types';
 
-// Check if environment variables are available
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Use the values from the Supabase integration
+const supabaseUrl = "https://hhqwtikklidrlqhjrzcc.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhocXd0aWtrbGlkcmxxaGpyemNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNDE0NjIsImV4cCI6MjA2MDcxNzQ2Mn0.tBX3xVBCgODbdZkVSXOKYknckkr5oNyXWvemZOudSsE";
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase environment variables are missing. Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
-}
-
-// Create client with fallback for development purposes
-export const supabase = createClient(
-  supabaseUrl || 'https://your-placeholder-url.supabase.co',
-  supabaseAnonKey || 'your-placeholder-key'
-);
+// Create client with actual values
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 export type UserRole = 'student' | 'admin';
 
@@ -62,194 +55,65 @@ export async function initializeDatabase() {
   try {
     console.log('Checking and creating database tables if needed...');
     
-    // Check if profiles table exists
-    const { error: profilesError } = await supabase
+    // Check if tables exist by querying them directly
+    const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id')
       .limit(1);
     
     if (profilesError) {
-      console.log('Creating profiles table...');
-      // Create profiles table
-      const { error } = await supabase.rpc('create_profiles_table');
-      if (error) throw error;
+      console.error('Error checking profiles table:', profilesError);
     }
     
-    // Check if tutorials table exists
-    const { error: tutorialsError } = await supabase
+    const { data: tutorials, error: tutorialsError } = await supabase
       .from('tutorials')
       .select('id')
       .limit(1);
     
     if (tutorialsError) {
-      console.log('Creating tutorials table...');
-      // Create tutorials table
-      const { error } = await supabase.rpc('create_tutorials_table');
-      if (error) throw error;
+      console.error('Error checking tutorials table:', tutorialsError);
     }
     
-    // Check if quizzes table exists
-    const { error: quizzesError } = await supabase
+    const { data: quizzes, error: quizzesError } = await supabase
       .from('quizzes')
       .select('id')
       .limit(1);
     
     if (quizzesError) {
-      console.log('Creating quizzes table...');
-      // Create quizzes table
-      const { error } = await supabase.rpc('create_quizzes_table');
-      if (error) throw error;
+      console.error('Error checking quizzes table:', quizzesError);
     }
     
-    // Check if quiz_attempts table exists
-    const { error: attemptsError } = await supabase
+    const { data: attempts, error: attemptsError } = await supabase
       .from('quiz_attempts')
       .select('id')
       .limit(1);
     
     if (attemptsError) {
-      console.log('Creating quiz_attempts table...');
-      // Create quiz_attempts table
-      const { error } = await supabase.rpc('create_quiz_attempts_table');
-      if (error) throw error;
+      console.error('Error checking quiz_attempts table:', attemptsError);
     }
     
-    // Check if tutorial_progress table exists
-    const { error: progressError } = await supabase
+    const { data: progress, error: progressError } = await supabase
       .from('tutorial_progress')
       .select('id')
       .limit(1);
     
     if (progressError) {
-      console.log('Creating tutorial_progress table...');
-      // Create tutorial_progress table
-      const { error } = await supabase.rpc('create_tutorial_progress_table');
-      if (error) throw error;
+      console.error('Error checking tutorial_progress table:', progressError);
     }
     
-    console.log('Database initialization completed successfully.');
-    return true;
+    // Log success or failure
+    if (profiles && tutorials && quizzes && attempts && progress) {
+      console.log('All tables exist and are accessible');
+      return true;
+    } else {
+      console.log('One or more tables may not exist or are not accessible');
+      return false;
+    }
   } catch (error) {
     console.error('Error initializing database:', error);
     return false;
   }
 }
 
-// Function to create SQL functions in Supabase to create tables
-export async function createDatabaseFunctions() {
-  try {
-    // Create stored procedure for profiles table
-    await supabase.rpc('execute_sql', {
-      sql_query: `
-        CREATE OR REPLACE FUNCTION create_profiles_table()
-        RETURNS void AS $$
-        BEGIN
-          CREATE TABLE IF NOT EXISTS profiles (
-            id UUID PRIMARY KEY REFERENCES auth.users(id),
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            role TEXT NOT NULL DEFAULT 'student',
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-          );
-        END;
-        $$ LANGUAGE plpgsql;
-      `
-    });
-    
-    // Create stored procedure for tutorials table
-    await supabase.rpc('execute_sql', {
-      sql_query: `
-        CREATE OR REPLACE FUNCTION create_tutorials_table()
-        RETURNS void AS $$
-        BEGIN
-          CREATE TABLE IF NOT EXISTS tutorials (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            title TEXT NOT NULL,
-            description TEXT NOT NULL,
-            content TEXT NOT NULL,
-            difficulty TEXT NOT NULL,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-          );
-        END;
-        $$ LANGUAGE plpgsql;
-      `
-    });
-    
-    // Create stored procedure for quizzes table
-    await supabase.rpc('execute_sql', {
-      sql_query: `
-        CREATE OR REPLACE FUNCTION create_quizzes_table()
-        RETURNS void AS $$
-        BEGIN
-          CREATE TABLE IF NOT EXISTS quizzes (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            title TEXT NOT NULL,
-            description TEXT NOT NULL,
-            questions JSONB NOT NULL,
-            difficulty TEXT NOT NULL,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-          );
-        END;
-        $$ LANGUAGE plpgsql;
-      `
-    });
-    
-    // Create stored procedure for quiz_attempts table
-    await supabase.rpc('execute_sql', {
-      sql_query: `
-        CREATE OR REPLACE FUNCTION create_quiz_attempts_table()
-        RETURNS void AS $$
-        BEGIN
-          CREATE TABLE IF NOT EXISTS quiz_attempts (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID NOT NULL REFERENCES profiles(id),
-            quiz_id UUID NOT NULL REFERENCES quizzes(id),
-            score INTEGER NOT NULL,
-            answers JSONB NOT NULL,
-            completed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-          );
-        END;
-        $$ LANGUAGE plpgsql;
-      `
-    });
-    
-    // Create stored procedure for tutorial_progress table
-    await supabase.rpc('execute_sql', {
-      sql_query: `
-        CREATE OR REPLACE FUNCTION create_tutorial_progress_table()
-        RETURNS void AS $$
-        BEGIN
-          CREATE TABLE IF NOT EXISTS tutorial_progress (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID NOT NULL REFERENCES profiles(id),
-            tutorial_id UUID NOT NULL REFERENCES tutorials(id),
-            completed BOOLEAN NOT NULL DEFAULT false,
-            last_viewed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(user_id, tutorial_id)
-          );
-        END;
-        $$ LANGUAGE plpgsql;
-      `
-    });
-    
-    // Create execute_sql function if it doesn't exist
-    await supabase.rpc('execute_sql', {
-      sql_query: `
-        CREATE OR REPLACE FUNCTION execute_sql(sql_query TEXT)
-        RETURNS void AS $$
-        BEGIN
-          EXECUTE sql_query;
-        END;
-        $$ LANGUAGE plpgsql SECURITY DEFINER;
-      `
-    });
-    
-    console.log('Database functions created successfully.');
-    return true;
-  } catch (error) {
-    console.error('Error creating database functions:', error);
-    return false;
-  }
-}
+// We'll remove the createDatabaseFunctions function since we've already created the tables via SQL
+
