@@ -3,8 +3,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
+  const { user, isAdmin, signOut } = useAuth();
+
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4">
@@ -30,12 +33,41 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Button variant="outline" className="hidden md:inline-flex border-ecg-primary text-ecg-primary hover:bg-ecg-primary hover:text-white transition-colors">
-              Log In
-            </Button>
-            <Button className="bg-ecg-primary text-white hover:bg-ecg-dark transition-colors">
-              Sign Up
-            </Button>
+            {user ? (
+              <>
+                <Button
+                  variant="outline"
+                  className="hidden md:inline-flex border-ecg-primary text-ecg-primary hover:bg-ecg-primary hover:text-white transition-colors"
+                  asChild
+                >
+                  <Link to={isAdmin ? "/admin/dashboard" : "/student/dashboard"}>
+                    {isAdmin ? "Admin Dashboard" : "My Dashboard"}
+                  </Link>
+                </Button>
+                <Button
+                  onClick={() => signOut()}
+                  className="bg-ecg-primary text-white hover:bg-ecg-dark transition-colors"
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  className="hidden md:inline-flex border-ecg-primary text-ecg-primary hover:bg-ecg-primary hover:text-white transition-colors"
+                  asChild
+                >
+                  <Link to="/login">Log In</Link>
+                </Button>
+                <Button
+                  className="bg-ecg-primary text-white hover:bg-ecg-dark transition-colors"
+                  asChild
+                >
+                  <Link to="/register">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
