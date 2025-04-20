@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, initializeDatabase, createDatabaseFunctions } from "@/lib/supabase";
 
 // Pages
 import Index from "./pages/Index";
@@ -35,6 +34,8 @@ const queryClient = new QueryClient();
 const App = () => {
   const [isSupabaseInitialized, setIsSupabaseInitialized] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+  const [dbInitialized, setDbInitialized] = useState(false);
+  const [dbInitializing, setDbInitializing] = useState(false);
 
   useEffect(() => {
     // Check if Supabase is initialized properly
@@ -51,6 +52,28 @@ const App = () => {
 
     checkSupabaseConnection();
   }, []);
+
+  useEffect(() => {
+    // Initialize database tables after Supabase connection is established
+    const setupDatabase = async () => {
+      if (isSupabaseInitialized && !dbInitialized && !dbInitializing) {
+        setDbInitializing(true);
+        try {
+          // Create the SQL functions first
+          await createDatabaseFunctions();
+          // Then initialize the tables
+          const initialized = await initializeDatabase();
+          setDbInitialized(initialized);
+        } catch (error) {
+          console.error('Database initialization failed:', error);
+        } finally {
+          setDbInitializing(false);
+        }
+      }
+    };
+
+    setupDatabase();
+  }, [isSupabaseInitialized, dbInitialized, dbInitializing]);
 
   if (initError) {
     return (
@@ -73,8 +96,8 @@ const App = () => {
     );
   }
 
-  if (!isSupabaseInitialized) {
-    return <LoadingScreen />;
+  if (!isSupabaseInitialized || dbInitializing) {
+    return <LoadingScreen message={dbInitializing ? "Setting up database..." : "Connecting to Supabase..."} />;
   }
 
   return (
