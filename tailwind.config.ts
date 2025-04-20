@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,20 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// ECG theme colors
+				ecg: {
+					primary: '#0277BD',       // Main blue
+					secondary: '#E57373',     // Heart red
+					accent: '#4FC3F7',        // Light blue
+					dark: '#1A237E',          // Dark navy
+					light: '#E1F5FE',         // Light blue background
+					success: '#43A047',       // Green for correct answers
+					warning: '#FFA000',       // Amber for warnings
+					error: '#E53935',         // Red for errors/incorrect
+					background: '#F5F7FA',    // Light gray background
+					card: '#FFFFFF',          // White card background
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +98,35 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-ecg': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'10%': {
+						transform: 'translateY(-10px)'
+					},
+					'20%': {
+						transform: 'translateY(15px)'
+					},
+					'30%': {
+						transform: 'translateY(-50px)'
+					},
+					'40%': {
+						transform: 'translateY(3px)'
+					},
+					'50%': {
+						transform: 'translateY(-5px)'
+					},
+					'60%': {
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-ecg': 'pulse-ecg 2s ease-in-out infinite',
 			}
 		}
 	},
