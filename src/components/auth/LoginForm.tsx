@@ -64,10 +64,14 @@ export default function LoginForm({ isAdmin = false }: { isAdmin?: boolean }) {
 
         toast.success(`Welcome back, ${data.user.email}!`);
         
-        // Use the correct dashboard based on user role
-        const redirectPath = isAdmin ? '/admin/dashboard' : '/student/dashboard';
+        // Determine the redirect path based on user role
+        const redirectPath = userData?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard';
         console.log('Redirecting to:', redirectPath);
-        navigate(redirectPath, { replace: true });
+        
+        // Ensure redirection happens
+        setTimeout(() => {
+          navigate(redirectPath, { replace: true });
+        }, 100);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');

@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, getCurrentUser, Profile } from '@/lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 type AuthContextType = {
   user: Profile | null;
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         refreshUser();
       } else if (event === 'SIGNED_OUT') {
