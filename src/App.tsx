@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect, useState } from "react";
-import { supabase, initializeDatabase, createDatabaseFunctions } from "@/lib/supabase";
+import { supabase, initializeDatabase } from "@/lib/supabase";
 
 // Pages
 import Index from "./pages/Index";
@@ -59,9 +59,7 @@ const App = () => {
       if (isSupabaseInitialized && !dbInitialized && !dbInitializing) {
         setDbInitializing(true);
         try {
-          // Create the SQL functions first
-          await createDatabaseFunctions();
-          // Then initialize the tables
+          // Initialize the tables - removed reference to createDatabaseFunctions
           const initialized = await initializeDatabase();
           setDbInitialized(initialized);
         } catch (error) {
