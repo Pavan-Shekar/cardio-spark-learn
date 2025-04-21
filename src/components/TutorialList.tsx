@@ -5,14 +5,23 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 
 // Define tutorial type based on our database schema
+type TutorialFromDB = {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  content: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+// Define tutorial type expected by TutorialCard
 type Tutorial = {
   id: string;
   title: string;
   description: string;
   level: 'Beginner' | 'Intermediate' | 'Advanced' | string;
   duration: string;
-  created_at?: string;
-  updated_at?: string;
 };
 
 const TutorialList = () => {
@@ -35,7 +44,15 @@ const TutorialList = () => {
           // Fall back to mock data if database fetch fails
           setTutorials(mockTutorials);
         } else if (data && data.length > 0) {
-          setTutorials(data as Tutorial[]);
+          // Map the database tutorials to the format expected by TutorialCard
+          const mappedTutorials = data.map((dbTutorial: TutorialFromDB) => ({
+            id: dbTutorial.id,
+            title: dbTutorial.title,
+            description: dbTutorial.description,
+            level: mapDifficultyToLevel(dbTutorial.difficulty),
+            duration: estimateDuration(dbTutorial.content),
+          }));
+          setTutorials(mappedTutorials);
           console.log('Loaded tutorials from Supabase:', data);
         } else {
           // Fall back to mock data if no tutorials in database
@@ -58,6 +75,27 @@ const TutorialList = () => {
 
     fetchTutorials();
   }, [toast]);
+
+  // Function to map difficulty to level
+  const mapDifficultyToLevel = (difficulty: string): string => {
+    switch (difficulty.toLowerCase()) {
+      case 'easy':
+        return 'Beginner';
+      case 'medium':
+        return 'Intermediate';
+      case 'hard':
+        return 'Advanced';
+      default:
+        return difficulty;
+    }
+  };
+
+  // Function to estimate duration based on content length
+  const estimateDuration = (content: string): string => {
+    // Simple estimation: 1 minute per 500 characters
+    const minutes = Math.max(Math.ceil(content.length / 500), 5);
+    return `${minutes} minutes`;
+  };
 
   if (loading) {
     return <div className="py-8 text-center">Loading tutorials...</div>;
