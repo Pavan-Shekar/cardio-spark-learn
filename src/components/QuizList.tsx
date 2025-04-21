@@ -76,7 +76,7 @@ const QuizList = () => {
             title={quiz.title}
             description={quiz.description}
             questionCount={quiz.questions?.length ?? 0}
-            difficulty={quiz.difficulty}
+            difficulty={quiz.difficulty as 'Easy' | 'Medium' | 'Hard'}
             estimatedTime={`${quiz.questions?.length ?? 0} minutes`}
           />
         ))}
@@ -86,4 +86,3 @@ const QuizList = () => {
 };
 
 export default QuizList;
-

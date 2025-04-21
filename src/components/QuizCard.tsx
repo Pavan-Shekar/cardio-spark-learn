@@ -9,7 +9,7 @@ interface QuizCardProps {
   title: string;
   description: string;
   questionCount: number;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  difficulty: 'Easy' | 'Medium' | 'Hard' | string;
   estimatedTime: string;
   thumbnail?: string;
 }
