@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +29,42 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import ManageTutorials from "./pages/admin/ManageTutorials";
 import ManageQuizzes from "./pages/admin/ManageQuizzes";
 import LoadingScreen from "./components/ui/LoadingScreen";
+
+// Create a basic tutorial detail page component
+const TutorialDetail = () => {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">Tutorial Content</h1>
+        <p>This page is under construction. Full tutorial content coming soon.</p>
+        <div className="mt-4">
+          <Link to="/tutorials" className="text-ecg-primary hover:underline">
+            Back to all tutorials
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Add a simple quiz detail page component
+const QuizDetail = () => {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">Quiz Content</h1>
+        <p>This page is under construction. Quiz content coming soon.</p>
+        <div className="mt-4">
+          <Link to="/quizzes" className="text-ecg-primary hover:underline">
+            Back to all quizzes
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+import { Link } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
@@ -109,7 +146,9 @@ const App = () => {
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
               <Route path="/tutorials" element={<Tutorials />} />
+              <Route path="/tutorials/:id" element={<TutorialDetail />} />
               <Route path="/quizzes" element={<Quizzes />} />
+              <Route path="/quizzes/:id" element={<QuizDetail />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />

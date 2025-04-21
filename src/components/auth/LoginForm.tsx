@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,11 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function LoginForm({ isAdmin = false }: { isAdmin?: boolean }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the intended destination from location state, or use default routes
+  const from = location.state?.from?.pathname || (isAdmin ? '/admin/dashboard' : '/student/dashboard');
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,7 +63,11 @@ export default function LoginForm({ isAdmin = false }: { isAdmin?: boolean }) {
         }
 
         toast.success(`Welcome back, ${data.user.email}!`);
-        navigate(isAdmin ? '/admin/dashboard' : '/student/dashboard');
+        
+        // Use the correct dashboard based on user role
+        const redirectPath = isAdmin ? '/admin/dashboard' : '/student/dashboard';
+        console.log('Redirecting to:', redirectPath);
+        navigate(redirectPath, { replace: true });
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');

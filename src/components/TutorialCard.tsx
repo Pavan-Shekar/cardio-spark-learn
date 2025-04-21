@@ -8,7 +8,7 @@ interface TutorialCardProps {
   id: string;
   title: string;
   description: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  level: 'Beginner' | 'Intermediate' | 'Advanced' | string;
   duration: string;
   imageUrl?: string;
 }
