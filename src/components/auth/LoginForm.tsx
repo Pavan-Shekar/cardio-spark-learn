@@ -64,13 +64,22 @@ export default function LoginForm({ isAdmin = false }: { isAdmin?: boolean }) {
 
         toast.success(`Welcome back, ${data.user.email}!`);
         
-        // Determine the redirect path based on user role
+        // Force a page redirect based on user role
         const redirectPath = userData?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard';
         console.log('Redirecting to:', redirectPath);
         
-        // Ensure redirection happens
+        // Add a small delay to ensure auth state is updated
         setTimeout(() => {
+          console.log('Executing delayed navigation to:', redirectPath);
           navigate(redirectPath, { replace: true });
+          
+          // Force a page reload if navigation doesn't work
+          setTimeout(() => {
+            if (window.location.pathname === '/login') {
+              console.log('Still on login page, forcing hard redirect');
+              window.location.href = redirectPath;
+            }
+          }, 200);
         }, 100);
       }
     } catch (error: any) {

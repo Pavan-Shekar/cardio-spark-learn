@@ -21,13 +21,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!user) {
+    console.log('ProtectedRoute: No user found, redirecting to login');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (requireAdmin && !isAdmin) {
+    console.log('ProtectedRoute: User is not admin, redirecting to unauthorized');
     return <Navigate to="/unauthorized" replace />;
   }
 
+  console.log('ProtectedRoute: Access granted for', isAdmin ? 'admin' : 'student');
   return <>{children}</>;
 };
 
