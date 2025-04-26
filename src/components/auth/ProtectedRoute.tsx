@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import LoadingScreen from '@/components/ui/LoadingScreen';
@@ -13,11 +13,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAdmin = false,
 }) => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, refreshUser } = useAuth();
   const location = useLocation();
 
+  // Refresh user data on route change to ensure we have latest permission data
+  useEffect(() => {
+    if (!loading && user) {
+      refreshUser();
+    }
+  }, [location.pathname]);
+
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen message="Verifying access..." />;
   }
 
   if (!user) {

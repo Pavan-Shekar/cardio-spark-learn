@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect, useState } from "react";
@@ -75,10 +74,8 @@ const App = () => {
   const [dbInitializing, setDbInitializing] = useState(false);
 
   useEffect(() => {
-    // Check if Supabase is initialized properly
     const checkSupabaseConnection = async () => {
       try {
-        // Simple test query to check connection
         await supabase.from('profiles').select('count', { count: 'exact', head: true });
         setIsSupabaseInitialized(true);
       } catch (error) {
@@ -91,12 +88,10 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    // Initialize database tables after Supabase connection is established
     const setupDatabase = async () => {
       if (isSupabaseInitialized && !dbInitialized && !dbInitializing) {
         setDbInitializing(true);
         try {
-          // Initialize the tables - removed reference to createDatabaseFunctions
           const initialized = await initializeDatabase();
           setDbInitialized(initialized);
         } catch (error) {
@@ -143,7 +138,6 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Public Routes */}
               <Route path="/" element={<Index />} />
               <Route path="/tutorials" element={<Tutorials />} />
               <Route path="/tutorials/:id" element={<TutorialDetail />} />
@@ -155,7 +149,6 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
 
-              {/* Student Routes */}
               <Route 
                 path="/student/dashboard" 
                 element={
@@ -173,7 +166,6 @@ const App = () => {
                 } 
               />
 
-              {/* Admin Routes */}
               <Route 
                 path="/admin/dashboard" 
                 element={
@@ -199,7 +191,6 @@ const App = () => {
                 } 
               />
 
-              {/* Catch-all Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

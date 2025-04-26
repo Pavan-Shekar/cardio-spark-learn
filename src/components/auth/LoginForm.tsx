@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -16,6 +16,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -27,6 +28,8 @@ type FormValues = z.infer<typeof formSchema>;
 export default function LoginForm({ isAdmin = false }: { isAdmin?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { refreshUser } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   
   // Get the intended destination from location state, or use default routes
   const from = location.state?.from?.pathname || (isAdmin ? '/admin/dashboard' : '/student/dashboard');
@@ -40,6 +43,7 @@ export default function LoginForm({ isAdmin = false }: { isAdmin?: boolean }) {
   });
 
   const onSubmit = async (values: FormValues) => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -59,32 +63,38 @@ export default function LoginForm({ isAdmin = false }: { isAdmin?: boolean }) {
         if (isAdmin && userData?.role !== 'admin') {
           toast.error('Access denied. Admin privileges required.');
           await supabase.auth.signOut();
+          setIsLoading(false);
           return;
         }
 
+        // Update auth context with new user data
+        await refreshUser();
+        
         toast.success(`Welcome back, ${data.user.email}!`);
         
-        // Force a page redirect based on user role
+        // Determine which dashboard to redirect to based on role
         const redirectPath = userData?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard';
         console.log('Redirecting to:', redirectPath);
         
-        // Add a small delay to ensure auth state is updated
+        // Add a small delay to ensure auth state is fully updated
         setTimeout(() => {
           console.log('Executing delayed navigation to:', redirectPath);
           navigate(redirectPath, { replace: true });
           
-          // Force a page reload if navigation doesn't work
+          // Fallback: Force a page reload if navigation doesn't work
           setTimeout(() => {
             if (window.location.pathname === '/login') {
               console.log('Still on login page, forcing hard redirect');
               window.location.href = redirectPath;
             }
-          }, 200);
-        }, 100);
+          }, 300);
+        }, 200);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');
       console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -120,8 +130,12 @@ export default function LoginForm({ isAdmin = false }: { isAdmin?: boolean }) {
             )}
           />
 
-          <Button type="submit" className="w-full bg-ecg-primary hover:bg-ecg-dark">
-            {form.formState.isSubmitting ? 'Signing in...' : 'Sign In'}
+          <Button 
+            type="submit" 
+            className="w-full bg-ecg-primary hover:bg-ecg-dark"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
       </Form>

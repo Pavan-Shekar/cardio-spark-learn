@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/integrations/supabase/types';
 
@@ -6,8 +5,14 @@ import { Database } from '@/integrations/supabase/types';
 const supabaseUrl = "https://hhqwtikklidrlqhjrzcc.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhocXd0aWtrbGlkcmxxaGpyemNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxNDE0NjIsImV4cCI6MjA2MDcxNzQ2Mn0.tBX3xVBCgODbdZkVSXOKYknckkr5oNyXWvemZOudSsE";
 
-// Create client with actual values
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+// Create client with actual values and explicit configuration
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 export type UserRole = 'student' | 'admin';
 
@@ -114,6 +119,3 @@ export async function initializeDatabase() {
     return false;
   }
 }
-
-// We'll remove the createDatabaseFunctions function since we've already created the tables via SQL
-
